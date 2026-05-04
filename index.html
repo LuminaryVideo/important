@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - LuminaryVideo</title>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { margin:0; padding:0; background:#fff; opacity:0; transition: opacity 0.5s ease; }
+        body.ready { opacity:1; }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+        nav{
+            position:fixed; top:0; left:0; right:0;
+            background:rgba(0,0,0,.55); backdrop-filter:blur(20px);
+            z-index:9999; padding:18px 0; transition:all 0.4s ease;
+            border-bottom:1px solid rgba(200,200,200,0.2);
+            box-shadow:0 0 15px rgba(180,180,180,0.25);
+        }
+        nav.scroll{ padding:12px 0; background:rgba(0,0,0,.75); box-shadow:0 0 20px rgba(190,190,190,0.3); }
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;position:relative;padding-bottom:4px;transition:all 0.3s ease;cursor:pointer;}
+        .nav a:hover{color:#fff}
+        .nav a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:#e0e0e0;transition:width 0.3s ease}
+        .nav a:hover::after{width:100%}
+
+        .hero{position:relative;width:100%;height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center}
+        .hero video{position:absolute;width:100%;height:100%;object-fit:cover;z-index:-1}
+        .hero .overlay{position:absolute;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:0}
+        .hero .text{position:relative;z-index:1;padding:20px;}
+
+        .about,.works{max-width:1100px;margin:100px auto;padding:0 20px;}
+        .about{text-align:center}
+        .about h2,.works h2{text-align:center;font-size:32px;margin-bottom:30px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+        .item{border-radius:20px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,0.05);cursor:pointer;transition:.5s ease}
+        .item:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 10px 20px rgba(0,0,0,0.1)}
+        .item video,.item img{width:100%;height:280px;object-fit:cover}
+        .item h4{padding:16px;text-align:center}
+        footer{text-align:center;padding:40px;color:#888;margin-top:50px}
+
+        #backToTop{position:fixed;bottom:30px;right:30px;width:44px;height:44px;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;cursor:pointer;z-index:999;opacity:0;visibility:hidden;transition:all 0.3s ease}
+        #backToTop.show{opacity:1;visibility:visible}
+        #backToTop:hover{background:rgba(255,255,255,0.2);transform:translateY(-3px)}
+
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s ease;}
+        .modal.show{opacity:1;visibility:visible;}
+        .modal-body{background:#fff;width:400px;padding:40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);position:relative;}
+        .modal-title{margin-bottom:20px;font-size:20px;}
+        .input{width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;}
+        .btn{width:100%;padding:12px;background:#000;color:#fff;border:none;border-radius:8px;cursor:pointer;}
+        .tab{display:flex;gap:10px;margin-bottom:16px;}
+        .tab button{flex:1;padding:10px;border:none;background:#f1f1f1;border-radius:8px;cursor:pointer;}
+        .tab button.active{background:#000;color:#fff;}
+        .link{text-align:center;font-size:13px;margin-top:10px;}
+        .close{position:absolute;top:12px;right:16px;font-size:22px;cursor:pointer;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('material')">素材库</a>
+            <a onclick="go('user')">用户中心</a>
+            <a onclick="go('cart')">购物车</a>
+            <a onclick="go('feedback')">反馈</a>
+            <a id="loginBtn">登录</a>
+        </div>
+    </div>
+</nav>
+
+<div class="modal" id="loginModal">
+    <div class="modal-body">
+        <div class="close" onclick="closeModal('loginModal')">✕</div>
+        <div class="tab">
+            <button class="active" onclick="switchTab('pwd')">密码登录</button>
+            <button onclick="switchTab('sms')">短信登录</button>
+        </div>
+        <div id="tab-pwd">
+            <h3 class="modal-title">账号密码登录</h3>
+            <input class="input" id="login_user" placeholder="账号/UID/手机号">
+            <input class="input" id="login_pwd" type="password" placeholder="密码">
+            <button class="btn" onclick="realLogin()">登录</button>
+        </div>
+        <div id="tab-sms" style="display:none;">
+            <h3 class="modal-title">短信快捷登录</h3>
+            <input class="input" id="sms_phone" placeholder="手机号">
+            <input class="input" id="sms_code" placeholder="验证码">
+            <button class="btn" onclick="getSmsCode()">获取验证码</button>
+            <button class="btn" style="margin-top:10px;" onclick="smsLogin()">短信登录</button>
+        </div>
+        <div class="link">
+            <a onclick="openRegister()">注册账号</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="registerModal">
+    <div class="modal-body">
+        <div class="close" onclick="closeModal('registerModal')">✕</div>
+        <h3 class="modal-title">注册账号</h3>
+        <input class="input" id="reg_phone" placeholder="手机号">
+        <input class="input" id="reg_pwd" type="password" placeholder="设置密码">
+        <input class="input" id="reg_nick" placeholder="昵称">
+        <button class="btn" onclick="realRegister()">立即注册</button>
+    </div>
+</div>
+
+<div class="hero">
+    <div class="overlay"></div>
+    <!-- 已替换为 GitHub 可播放在线视频 -->
+    <video muted loop src="https://assets.mixkit.co/videos/preview/mixkit-animated-particle-background-1032-large.mp4"></video>
+    <div class="text">
+        <h1>光影艺术 · 匠心定制</h1>
+        <p>高端影视素材 | 定制物料 | 专业制作</p>
+    </div>
+</div>
+
+<div class="about">
+    <h2>关于我们</h2>
+    <p>LuminaryVideo专注高端视频素材提供、定制影像与品牌宣传，用专业呈现作品，素材库精选优质影视素材，支持按需选购。</p>
+</div>
+
+<div class="works">
+    <h2>作品展示</h2>
+    <div class="grid">
+        <div class="item">
+            <!-- 已替换为在线视频 -->
+            <video muted src="https://assets.mixkit.co/videos/preview/mixkit-animated-particle-background-1032-large.mp4"></video>
+            <h4>宣传片</h4>
+        </div>
+        <div class="item"><img src="img/work2.jpg"><h4>定制物料</h4></div>
+        <div class="item"><img src="img/work4.jpg"><h4>素材预览</h4></div>
+        <div class="item"><img src="img/work3.jpg"><h4>制作案例</h4></div>
+    </div>
+</div>
+
+<footer>© 2025 LuminaryVideo 版权所有</footer>
+<div id="backToTop">↑</div>
+
+<script>
+    function $(selector){return document.querySelector(selector);}
+    function go(page){
+        location.href=page+".html";
+    }
+    function closeModal(id){ $('#'+id).classList.remove('show'); }
+    function openModal(id){ $('#'+id).classList.add('show'); }
+
+    function switchTab(type){
+        $("#tab-pwd").style.display=type==='pwd'?'block':'none';
+        $("#tab-sms").style.display=type==='sms'?'block':'none';
+        document.querySelectorAll(".tab button").forEach(b=>b.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    window.addEventListener('load',()=>{
+        document.body.classList.add('ready');
+        checkLoginBtn();
+    });
+
+    function checkLoginBtn(){
+        let user=localStorage.getItem('loginUser');
+        if(user){
+            $('#loginBtn').innerText='用户中心';
+            $('#loginBtn').onclick=()=>go('user');
+        }else{
+            $('#loginBtn').innerText='登录';
+            $('#loginBtn').onclick=()=>openModal('loginModal');
+        }
+    }
+
+    function openRegister(){
+        closeModal('loginModal');
+        setTimeout(()=>openModal('registerModal'),300);
+    }
+
+    function realRegister(){
+        let phone=$('#reg_phone').value;
+        let pwd=$('#reg_pwd').value;
+        let nick=$('#reg_nick').value;
+        if(!phone||!pwd||!nick){alert('请填写完整');return;}
+
+        let users=JSON.parse(localStorage.getItem('users')||'[]');
+        let exist=users.find(u=>u.phone===phone);
+        if(exist){alert('手机号已注册');return;}
+
+        let uid='LV'+Date.now().toString().slice(-6);
+        users.push({uid,nick,phone,pwd});
+        localStorage.setItem('users',JSON.stringify(users));
+        alert('注册成功！');
+        closeModal('registerModal');
+        checkLoginBtn();
+    }
+
+    function realLogin(){
+        let user=$('#login_user').value;
+        let pwd=$('#login_pwd').value;
+        let users=JSON.parse(localStorage.getItem('users')||'[]');
+        let find=users.find(u=>
+            (u.phone===user||u.uid===user||u.nick===user)&&u.pwd===pwd
+        );
+        if(!find){alert('账号或密码错误');return;}
+
+        localStorage.setItem('loginUser',JSON.stringify(find));
+        alert('登录成功！');
+        closeModal('loginModal');
+        checkLoginBtn();
+    }
+
+    function getSmsCode(){alert('验证码：1234');}
+    function smsLogin(){
+        let phone=$('#sms_phone').value;
+        let code=$('#sms_code').value;
+        if(!phone||code!=='1234'){alert('验证码错误');return;}
+
+        let users=JSON.parse(localStorage.getItem('users')||'[]');
+        let find=users.find(u=>u.phone===phone);
+        if(!find){alert('该手机号未注册');return;}
+
+        localStorage.setItem('loginUser',JSON.stringify(find));
+        alert('短信登录成功！');
+        closeModal('loginModal');
+        checkLoginBtn();
+    }
+
+    const nav=document.getElementById('mainNav');
+    const backToTop=document.getElementById('backToTop');
+    window.addEventListener('scroll',()=>{
+        if(window.scrollY>50) nav.classList.add('scroll')
+        else nav.classList.remove('scroll')
+        if(window.scrollY>300) backToTop.classList.add('show')
+        else backToTop.classList.remove('show')
+    })
+    backToTop.onclick=()=>{window.scrollTo({top:0,behavior:'smooth'})}
+</script>
+</body>
+</html>

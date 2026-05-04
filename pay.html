@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结算</title>
+    <style>
+        html{scroll-behavior:smooth;}
+        body{margin:0;background:#f6f6f6;opacity:0;transition:opacity 0.5s;}
+        body.ready{opacity:1;}
+        *{box-sizing:border-box;font-family:Arial}
+
+        nav{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,.55);backdrop-filter:blur(20px);
+            z-index:999;padding:18px 0;transition:all 0.4s;
+        }
+        nav.scroll{padding:12px 0;background:rgba(0,0,0,.75);}
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;cursor:pointer;}
+
+        .container{max-width:700px;margin:160px auto 60px;padding:0 20px;}
+        .card{background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.05);margin-bottom:20px;}
+        input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;}
+        .order{background:#f7f7f7;padding:16px;border-radius:10px;margin-bottom:20px;}
+        .order-item{display:flex;justify-content:space-between;margin:8px 0;}
+        .total{font-size:18px;font-weight:bold;color:#e53e3e;text-align:right;margin:10px 0;}
+        .btn{width:100%;padding:14px;background:#000;color:#fff;border:none;border-radius:10px;cursor:pointer;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('cart')">购物车</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <h3>收货信息</h3>
+        <input id="recvName" placeholder="姓名">
+        <input id="recvPhone" placeholder="电话">
+        <input id="recvAddr" placeholder="地址">
+    </div>
+    <div class="card">
+        <h3>订单信息</h3>
+        <div class="order" id="orderInfo"></div>
+        <div class="total" id="total">实付款：¥0</div>
+        <button class="btn" onclick="pay()">提交订单并支付</button>
+    </div>
+</div>
+
+<script>
+    function $(s){return document.querySelector(s);}
+    function go(p){
+        document.body.style.opacity=1;
+        setTimeout(()=>{
+            location.href=p+'.html';
+        }, 300);
+    }
+
+    // 页面加载&登录校验
+    document.addEventListener('DOMContentLoaded', function() {
+        if(!localStorage.getItem('loginUser')){
+            alert('请登录');
+            go('index');
+            return;
+        }
+        loadOrderInfo();
+        document.body.classList.add('ready');
+    });
+
+    // 加载订单详情
+    function loadOrderInfo(){
+        let items=JSON.parse(localStorage.getItem('cart')||'[]');
+        let orderInfo=$('#orderInfo');
+        let total=0;
+        let html='';
+
+        items.forEach(item=>{
+            html+=`
+                <div class="order-item">
+                    <div>${item.name}</div>
+                    <div>¥${item.price}</div>
+                </div>
+            `;
+            total+=item.price;
+        });
+
+        orderInfo.innerHTML=html;
+        $('#total').innerText=`实付款：¥${total}`;
+    }
+
+    // 支付并生成订单
+    function pay(){
+        let recvName=$('#recvName').value;
+        let recvPhone=$('#recvPhone').value;
+        let recvAddr=$('#recvAddr').value;
+        
+        if(!recvName||!recvPhone||!recvAddr){
+            alert('请填写完整收货信息');
+            return;
+        }
+
+        let cartItems=JSON.parse(localStorage.getItem('cart')||'[]');
+        if(cartItems.length===0){
+            alert('购物车为空！');
+            go('cart');
+            return;
+        }
+
+        // 生成订单记录
+        let orders=JSON.parse(localStorage.getItem('orders')||'[]');
+        let now=new Date().toLocaleString();
+        
+        cartItems.forEach(item=>{
+            orders.push({
+                name:item.name,
+                price:item.price,
+                time:now,
+                recvName,
+                recvPhone,
+                recvAddr
+            });
+        });
+
+        // 保存订单&清空购物车
+        localStorage.setItem('orders',JSON.stringify(orders));
+        localStorage.removeItem('cart');
+
+        alert('支付成功！订单已生成');
+        go('order');
+    }
+
+    const nav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{
+        nav.classList.toggle('scroll',window.scrollY>50);
+    });
+</script>
+</body>
+</html>

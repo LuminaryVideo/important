@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>素材库</title>
+    <style>
+        html{scroll-behavior:smooth;}
+        body{margin:0;background:#f6f6f6;opacity:0;transition:opacity 0.5s;}
+        body.ready{opacity:1;}
+        *{box-sizing:border-box;font-family:Arial}
+
+        nav{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,.55);backdrop-filter:blur(20px);
+            z-index:999;padding:18px 0;transition:all 0.4s;
+        }
+        nav.scroll{padding:12px 0;background:rgba(0,0,0,.75);}
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;cursor:pointer;}
+
+        .container{max-width:1100px;margin:160px auto 60px;padding:0 20px;}
+        .title{text-align:center;font-size:28px;margin-bottom:40px;}
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .item{background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;transition:0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .item:hover{transform:translateY(-6px);}
+        .item img{width:100%;height:220px;object-fit:cover;}
+        .label{padding:16px;text-align:center;font-size:15px;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('material')">素材库</a>
+            <a onclick="go('user')">用户中心</a>
+            <a onclick="go('cart')">购物车</a>
+            <a onclick="go('feedback')">反馈</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="title">素材库</h2>
+    <div class="grid">
+        <div class="item" onclick="go('shop')">
+            <img src="shop-photo/1.jpg">
+            <div class="label">高清视频素材</div>
+        </div>
+        <div class="item" onclick="go('shop')">
+            <img src="shop-photo/2.jpg">
+            <div class="label">实拍素材</div>
+        </div>
+        <div class="item" onclick="go('shop')">
+            <img src="shop-photo/3.jpg">
+            <div class="label">特效素材</div>
+        </div>
+        <div class="item" onclick="go('shop')">
+            <img src="img/work2.jpg">
+            <div class="label">音频素材</div>
+        </div>
+        <div class="item" onclick="go('shop')">
+            <img src="img/work3.jpg">
+            <div class="label">模板素材</div>
+        </div>
+        <div class="item" onclick="go('shop')">
+            <img src="img/work4.jpg">
+            <div class="label">原创素材</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function $(s){return document.querySelector(s);}
+    function go(p){
+        location.href=p+'.html';
+    }
+    // 修复：素材库直接显示，无任何登录校验
+    window.addEventListener('load',()=>{
+        document.body.classList.add('ready');
+    });
+    const nav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{
+        nav.classList.toggle('scroll',window.scrollY>50);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物车</title>
+    <style>
+        html{scroll-behavior:smooth;}
+        body{margin:0;background:#f6f6f6;opacity:0;transition:opacity 0.5s;}
+        body.ready{opacity:1;}
+        *{box-sizing:border-box;font-family:Arial}
+
+        nav{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,.55);backdrop-filter:blur(20px);
+            z-index:999;padding:18px 0;transition:all 0.4s;
+        }
+        nav.scroll{padding:12px 0;background:rgba(0,0,0,.75);}
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;cursor:pointer;}
+
+        .container{max-width:900px;margin:160px auto 60px;padding:0 20px;}
+        .card{background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .item{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee;}
+        .total{text-align:right;font-size:18px;font-weight:bold;color:#e53e3e;margin:20px 0;}
+        .btn{width:100%;padding:14px;background:#000;color:#fff;border:none;border-radius:10px;cursor:pointer;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('user')">用户中心</a>
+            <a onclick="go('cart')">购物车</a>
+            <a onclick="go('feedback')">反馈</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <h3>购物车</h3>
+        <div id="list"></div>
+        <div class="total" id="total">合计：¥0</div>
+        <button class="btn" onclick="checkout()">去结算</button>
+    </div>
+</div>
+
+<script>
+    function $(s){return document.querySelector(s);}
+    function go(p){
+        document.body.style.opacity=1;
+        setTimeout(()=>{
+            location.href=p+'.html';
+        }, 300);
+    }
+
+    // 修复：DOM加载完成后再校验
+    document.addEventListener('DOMContentLoaded', function() {
+        if(!localStorage.getItem('loginUser')){
+            alert('请先登录');
+            go('index');
+            return;
+        }
+        loadCart();
+        document.body.classList.add('ready');
+    });
+
+    function loadCart(){
+        let items=JSON.parse(localStorage.getItem('cart')||'[]');
+        let html='';let total=0;
+        items.forEach(i=>{
+            html+=`<div class="item"><div>${i.name}</div><div>¥${i.price}</div></div>`;
+            total+=i.price;
+        });
+        $('#list').innerHTML=html;
+        $('#total').innerText=`合计：¥${total}`;
+    }
+
+    function checkout(){
+        alert('跳转到结算页');
+        go('pay');
+    }
+
+    const nav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{
+        nav.classList.toggle('scroll',window.scrollY>50);
+    });
+</script>
+</body>
+</html>

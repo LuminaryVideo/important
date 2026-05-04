@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心</title>
+    <style>
+        html{scroll-behavior:smooth;}
+        body{margin:0;background:#f6f6f6;opacity:0;transition:opacity 0.5s;}
+        body.ready{opacity:1;}
+        *{box-sizing:border-box;font-family:Arial}
+
+        nav{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,.55);backdrop-filter:blur(20px);
+            z-index:999;padding:18px 0;transition:all 0.4s;
+        }
+        nav.scroll{padding:12px 0;background:rgba(0,0,0,.75);}
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;cursor:pointer;}
+
+        .container{max-width:700px;margin:160px auto 60px;padding:0 20px;}
+        .card{background:#fff;border-radius:16px;padding:30px;margin-bottom:20px;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .avatar{width:90px;height:90px;background:#ddd;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;cursor:pointer;}
+        .nick{font-size:24px;font-weight:bold;margin-bottom:6px;}
+        .uid{color:#666;margin-bottom:10px;}
+        .info{margin:6px 0;color:#333;}
+        .menu{padding:16px 20px;border-bottom:1px solid #eee;cursor:pointer;transition:0.2s;}
+        .menu:hover{background:#f8f8f8;border-radius:8px;}
+        .btn{padding:14px;background:#000;color:#fff;border:none;border-radius:10px;width:100%;cursor:pointer;margin-top:10px;}
+        
+        /* 弹窗样式 */
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:0.3s;}
+        .modal.show{opacity:1;visibility:visible;}
+        .modal-body{background:#fff;width:400px;padding:30px;border-radius:16px;position:relative;}
+        .close{position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;}
+        .modal-title{font-size:18px;margin-bottom:20px;}
+        .input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('material')">素材库</a>
+            <a onclick="go('user')">用户中心</a>
+            <a onclick="go('cart')">购物车</a>
+            <a onclick="go('feedback')">反馈</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <div class="avatar" onclick="openModal('avatarModal')">头像</div>
+        <div class="nick" id="nick">加载中...</div>
+        <div class="uid" id="uid">UID：---</div>
+        <div class="info" id="phone">手机号：---</div>
+        <div class="info">注册时间：2025</div>
+    </div>
+
+    <div class="card">
+        <div class="menu" onclick="go('order')">我的订单</div>
+        <div class="menu" onclick="go('cart')">我的购物车</div>
+        <div class="menu" onclick="openModal('editInfoModal')">修改资料</div>
+        <div class="menu" onclick="openModal('changePwdModal')">修改密码</div>
+        <div class="menu" onclick="go('feedback')">意见反馈</div>
+    </div>
+
+    <div class="card">
+        <button class="btn" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<!-- 更换头像弹窗 -->
+<div class="modal" id="avatarModal">
+    <div class="modal-body">
+        <div class="close" onclick="closeModal('avatarModal')">✕</div>
+        <div class="modal-title">更换头像</div>
+        <input type="file" class="input" accept="image/*">
+        <button class="btn" onclick="alert('头像上传成功！')">确认更换</button>
+    </div>
+</div>
+
+<!-- 修改资料弹窗 -->
+<div class="modal" id="editInfoModal">
+    <div class="modal-body">
+        <div class="close" onclick="closeModal('editInfoModal')">✕</div>
+        <div class="modal-title">修改个人资料</div>
+        <input class="input" id="newNick" placeholder="新昵称">
+        <input class="input" id="newPhone" placeholder="新手机号">
+        <button class="btn" onclick="editInfo()">保存修改</button>
+    </div>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div class="modal" id="changePwdModal">
+    <div class="modal-body">
+        <div class="close" onclick="closeModal('changePwdModal')">✕</div>
+        <div class="modal-title">修改密码</div>
+        <input class="input" id="oldPwd" type="password" placeholder="原密码">
+        <input class="input" id="newPwd" type="password" placeholder="新密码">
+        <input class="input" id="confirmPwd" type="password" placeholder="确认新密码">
+        <button class="btn" onclick="changePwd()">确认修改</button>
+    </div>
+</div>
+
+<script>
+    function $(s){return document.querySelector(s);}
+    function go(p){
+        document.body.style.opacity=1;
+        setTimeout(()=>{
+            location.href=p+'.html';
+        }, 300);
+    }
+
+    // 弹窗控制
+    function openModal(id){
+        $('#'+id).classList.add('show');
+    }
+    function closeModal(id){
+        $('#'+id).classList.remove('show');
+    }
+
+    // 页面加载&登录校验
+    document.addEventListener('DOMContentLoaded', function() {
+        let u=localStorage.getItem('loginUser');
+        if(!u){
+            alert('请先登录！');
+            go('index');
+            return;
+        }
+        let user=JSON.parse(u);
+        $('#nick').innerText=user.nick;
+        $('#uid').innerText='UID：'+user.uid;
+        $('#phone').innerText='手机号：'+user.phone;
+        document.body.classList.add('ready');
+    });
+
+    // 修改资料功能
+    function editInfo(){
+        let newNick=$('#newNick').value;
+        let newPhone=$('#newPhone').value;
+        if(!newNick && !newPhone){
+            alert('请填写要修改的信息');
+            return;
+        }
+
+        let loginUser=JSON.parse(localStorage.getItem('loginUser'));
+        let allUsers=JSON.parse(localStorage.getItem('users')||'[]');
+
+        // 更新登录用户信息
+        if(newNick) loginUser.nick=newNick;
+        if(newPhone) loginUser.phone=newPhone;
+        localStorage.setItem('loginUser',JSON.stringify(loginUser));
+
+        // 更新总用户列表
+        allUsers=allUsers.map(u=>{
+            if(u.uid===loginUser.uid){
+                return loginUser;
+            }
+            return u;
+        });
+        localStorage.setItem('users',JSON.stringify(allUsers));
+
+        // 刷新页面显示
+        $('#nick').innerText=loginUser.nick;
+        $('#phone').innerText='手机号：'+loginUser.phone;
+        
+        alert('资料修改成功！');
+        closeModal('editInfoModal');
+    }
+
+    // 修改密码功能
+    function changePwd(){
+        let oldPwd=$('#oldPwd').value;
+        let newPwd=$('#newPwd').value;
+        let confirmPwd=$('#confirmPwd').value;
+
+        if(!oldPwd||!newPwd||!confirmPwd){
+            alert('请填写完整密码信息');
+            return;
+        }
+        if(newPwd!==confirmPwd){
+            alert('新密码和确认密码不一致');
+            return;
+        }
+
+        let loginUser=JSON.parse(localStorage.getItem('loginUser'));
+        let allUsers=JSON.parse(localStorage.getItem('users')||'[]');
+
+        // 验证原密码
+        if(loginUser.pwd!==oldPwd){
+            alert('原密码错误');
+            return;
+        }
+
+        // 更新密码
+        loginUser.pwd=newPwd;
+        localStorage.setItem('loginUser',JSON.stringify(loginUser));
+        
+        allUsers=allUsers.map(u=>{
+            if(u.uid===loginUser.uid){
+                u.pwd=newPwd;
+                return u;
+            }
+            return u;
+        });
+        localStorage.setItem('users',JSON.stringify(allUsers));
+
+        alert('密码修改成功！请重新登录');
+        logout();
+    }
+
+    // 退出登录
+    function logout(){
+        localStorage.removeItem('loginUser');
+        alert('已安全退出');
+        go('index');
+    }
+
+    const nav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{
+        nav.classList.toggle('scroll',window.scrollY>50);
+    });
+</script>
+</body>
+</html>

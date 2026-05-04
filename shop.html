@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品中心</title>
+    <style>
+        html{scroll-behavior:smooth;}
+        body{margin:0;background:#f6f6f6;opacity:0;transition:opacity 0.5s;}
+        body.ready{opacity:1;}
+        *{box-sizing:border-box;font-family:Arial}
+
+        nav{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,.55);backdrop-filter:blur(20px);
+            z-index:999;padding:18px 0;transition:all 0.4s;
+        }
+        nav.scroll{padding:12px 0;background:rgba(0,0,0,.75);}
+        .nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:#fff}
+        .nav a{color:#fff;text-decoration:none;margin-left:20px;cursor:pointer;}
+
+        .container{max-width:1100px;margin:160px auto 60px;padding:0 20px;}
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);transition:0.3s;}
+        .card:hover{transform:translateY(-6px);}
+        .card img{width:100%;height:240px;object-fit:cover;}
+        .info{padding:20px;}
+        .title{font-size:16px;margin-bottom:8px;}
+        .price{color:#e53e3e;font-size:18px;font-weight:bold;margin-bottom:10px;}
+        .btn{width:100%;padding:10px;background:#000;color:#fff;border:none;border-radius:8px;cursor:pointer;}
+        .btn.disabled{background:#999;cursor:not-allowed;}
+    </style>
+</head>
+<body>
+
+<nav id="mainNav">
+    <div class="nav">
+        <h2>LuminaryVideo</h2>
+        <div>
+            <a onclick="go('index')">主页</a>
+            <a onclick="go('shop')">商品</a>
+            <a onclick="go('material')">素材库</a>
+            <a onclick="go('user')">用户中心</a>
+            <a onclick="go('cart')">购物车</a>
+            <a onclick="go('feedback')">反馈</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="grid">
+        <div class="card">
+            <img src="shop-photo/1.jpg">
+            <div class="info">
+                <div class="title">高清素材包</div>
+                <div class="price">¥99</div>
+                <button class="btn" id="b1" onclick="buy(1)">加入购物车</button>
+            </div>
+        </div>
+        <div class="card">
+            <img src="shop-photo/2.jpg">
+            <div class="info">
+                <div class="title">宣传片制作</div>
+                <div class="price">¥1299</div>
+                <button class="btn" id="b2" onclick="buy(2)">加入购物车</button>
+            </div>
+        </div>
+        <div class="card">
+            <img src="shop-photo/3.jpg">
+            <div class="info">
+                <div class="title">短视频拍摄</div>
+                <div class="price">¥699</div>
+                <button class="btn" id="b3" onclick="buy(3)">加入购物车</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function $(s){return document.querySelector(s);}
+    function go(p){
+        location.href=p+'.html';
+    }
+
+    // 修复：页面直接显示，仅购买按钮做登录校验
+    window.addEventListener('load',()=>{
+        document.body.classList.add('ready');
+        // 仅禁用购买按钮，不隐藏页面
+        let isLogin=!!localStorage.getItem('loginUser');
+        if(!isLogin){
+            document.querySelectorAll('.btn').forEach(b=>{
+                b.classList.add('disabled');
+                b.innerText='登录后购买';
+            });
+        }
+    });
+
+    function buy(id){
+        let isLogin=!!localStorage.getItem('loginUser');
+        if(!isLogin){
+            alert('请先登录才能购买');
+            // 跳转到登录弹窗（主页），不是直接跳用户中心
+            location.href='index.html#login';
+            return;
+        }
+        let items=JSON.parse(localStorage.getItem('cart')||'[]');
+        let name,price;
+        if(id===1){name='高清素材包';price=99;}
+        if(id===2){name='宣传片制作';price=1299;}
+        if(id===3){name='短视频拍摄';price=699;}
+        items.push({name,price});
+        localStorage.setItem('cart',JSON.stringify(items));
+        alert('已加入购物车');
+    }
+
+    const nav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{
+        nav.classList.toggle('scroll',window.scrollY>50);
+    });
+</script>
+</body>
+</html>
